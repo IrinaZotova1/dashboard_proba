@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Театр Сегодня — Дашборд</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  @font-face { font-family: 'NauryzRedKeds'; src: local('NauryzRedKeds'); font-weight: 400 900; font-display: swap; }
+  @font-face { font-family: 'Gropled'; src: local('Gropled'); font-weight: 400 900; font-display: swap; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #ece9e4; --bg-soft: #f3f1ec; --card: #ffffff;
+    --beige: #e8e2d5; --beige-deep: #d9d2c1; --dark: #1c1b1a;
+    --text: #2a2724; --muted: #8a857d; --line: #e6e2d9;
+    --radius-lg: 20px; --radius-md: 14px; --radius-sm: 10px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.04);
+    --shadow-md: 0 8px 24px rgba(0,0,0,.06);
+    --shadow-lg: 0 14px 40px rgba(0,0,0,.08);
+    --font-display: 'NauryzRedKeds', 'Inter', system-ui, sans-serif;
+    --font-caption: 'Gropled', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .app { max-width: 1360px; margin: 0 auto; padding: 28px 24px 56px; display: flex; flex-direction: column; gap: 22px; }
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; gap: 16px; flex-wrap: wrap; }
+  .header h1 { font-family: var(--font-display); font-size: 36px; font-weight: 700; letter-spacing: -0.01em; color: var(--dark); line-height: 1.1; }
+  .header-sub { font-family: var(--font-caption); font-size: 12px; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #7cbf94; box-shadow: 0 0 0 3px rgba(124, 191, 148, .2); animation: livePulse 2s infinite; }
+  @keyframes livePulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(124, 191, 148, .2); } 50% { box-shadow: 0 0 0 6px rgba(124, 191, 148, .05); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .full { grid-column: 1 / -1; }
+  .card { background: var(--card); border-radius: var(--radius-lg); padding: 26px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; animation: fadeUp .55s cubic-bezier(.2,.7,.3,1) backwards; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .card-title-wrap { display: flex; align-items: center; gap: 14px; }
+  .card-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--bg-soft); display: grid; place-items: center; color: var(--dark); flex-shrink: 0; }
+  .card-icon svg { width: 22px; height: 22px; }
+  .card-title { font-family: var(--font-caption); font-size: 26px; font-weight: 700; color: var(--dark); letter-spacing: -0.005em; line-height: 1.1; }
+  .card-subtitle { font-family: var(--font-body); font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .chip { font-family: var(--font-caption); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; padding: 6px 13px; border-radius: 20px; background: var(--bg-soft); color: var(--muted); font-weight: 600; }
+  .hero { padding: 0; overflow: hidden; position: relative; min-height: 520px; display: flex; flex-direction: column; }
+  .hero-image { position: absolute; inset: 0; background-size: cover; background-position: center; background-color: var(--dark); transition: transform 1.2s ease; }
+  .hero:hover .hero-image { transform: scale(1.04); }
+  .hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(28,27,26,.55) 0%, rgba(28,27,26,.25) 35%, rgba(28,27,26,.85) 100%); }
+  .hero-content { position: relative; z-index: 2; padding: 26px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; color: #fff; min-height: 520px; }
+  .hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); color: var(--dark); border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .pill svg { width: 14px; height: 14px; }
+  .pill-live { background: #fff; }
+  .pill-live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #4a8a67; animation: livePulse 2s infinite; }
+  .hero-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .filter-select { padding: 10px 38px 10px 16px; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.5); border-radius: 20px; font-family: var(--font-caption); font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--dark); cursor: pointer; outline: none; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1b1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat: no-repeat; background-position: right 14px center; background-size: 14px; transition: all .25s ease; }
+  .filter-select:hover { background: #fff; }
+  .filter-select:focus { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.4); }
+  .hero-title-block { max-width: 620px; margin-top: 10px; }
+  .hero-title { font-family: var(--font-caption); font-size: clamp(32px, 4vw, 46px); font-weight: 700; line-height: 1.05; letter-spacing: -0.015em; margin-bottom: 12px; text-shadow: 0 2px 20px rgba(0,0,0,.3); }
+  .hero-desc { font-size: 14.5px; line-height: 1.5; opacity: .92; max-width: 500px; }
+  .carousel-strip { display: flex; gap: 14px; overflow-x: auto; padding: 4px 0 2px; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -26px -26px; padding: 14px 26px 26px; }
+  .carousel-strip::-webkit-scrollbar { display: none; }
+  .show-card { flex: 0 0 270px; scroll-snap-align: start; background: var(--card); border-radius: var(--radius-md); overflow: hidden; cursor: pointer; transition: transform .35s cubic-bezier(.2,.8,.3,1), box-shadow .35s; box-shadow: var(--shadow-md); color: var(--text); text-decoration: none; display: flex; flex-direction: column; position: relative; }
+  .show-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+  .show-poster { height: 140px; position: relative; overflow: hidden; background-color: var(--beige-deep); }
+  .show-poster img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s cubic-bezier(.2,.8,.3,1); }
+  .show-card:hover .show-poster img { transform: scale(1.06); }
+  .show-poster::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.35)); pointer-events: none; }
+  .show-status { position: absolute; top: 10px; left: 10px; z-index: 2; font-family: var(--font-caption); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: 20px; font-weight: 700; }
+  .show-status--active { background: #4a8a67; color: #fff; }
+  .show-status--ended { background: rgba(28,27,26,.75); color: #fff; }
+  .show-rating { position: absolute; top: 10px; right: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; background: rgba(255,255,255,.96); backdrop-filter: blur(8px); border-radius: 20px; font-family: var(--font-caption); font-size: 10px; font-weight: 700; color: var(--dark); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+  .show-rating svg { width: 11px; height: 11px; color: #d4a24e; }
+  .show-body { padding: 14px; display: flex; flex-direction: column; flex: 1; }
+  .show-theatre { font-family: var(--font-caption); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .show-title { font-size: 15px; font-weight: 700; line-height: 1.25; color: var(--dark); margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .show-meta-block { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; flex: 1; }
+  .show-meta-row { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); font-family: var(--font-body); }
+  .show-meta-row strong { color: var(--dark); font-weight: 600; }
+  .show-meta-row svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .show-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--line); font-family: var(--font-caption); font-size: 10px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+  .show-year { color: var(--dark); font-weight: 700; }
+  .dropdown { position: relative; margin-bottom: 16px; }
+  .dropdown-select { width: 100%; padding: 14px 44px 14px 18px; background: var(--bg-soft); border: 1px solid transparent; border-radius: var(--radius-md); font-family: var(--font-caption); font-size: 14px; font-weight: 600; letter-spacing: .02em; color: var(--dark); cursor: pointer; outline: none; -webkit-appearance: none; appearance: none; transition: all .25s ease; }
+  .dropdown-select:hover { background: #efece5; }
+  .dropdown-select:focus { border-color: var(--dark); background: var(--card); box-shadow: 0 0 0 4px rgba(28,27,26,.06); }
+  .dropdown-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; color: var(--dark); transition: transform .25s ease; }
+  .dropdown-select:focus + .dropdown-icon { transform: translateY(-50%) rotate(180deg); }
+  .rep-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; padding-right: 4px; margin: 0 -4px; }
+  .rep-list::-webkit-scrollbar { width: 4px; }
+  .rep-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+  .rep-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: background .2s, transform .2s; text-decoration: none; color: inherit; }
+  .rep-item:hover { background: var(--bg-soft); transform: translateX(2px); }
+  .rep-thumb { width: 60px; height: 60px; border-radius: 10px; background-size: cover; background-position: center; background-color: var(--beige); flex-shrink: 0; }
+  .rep-info { flex: 1; min-width: 0; }
+  .rep-name { font-size: 13.5px; font-weight: 600; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+  .rep-desc { font-family: var(--font-body); font-size: 11.5px; color: var(--muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 3px; }
+  .rep-meta { display: flex; gap: 8px; align-items: center; font-family: var(--font-caption); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .rep-date-badge { background: var(--bg-soft); padding: 3px 8px; border-radius: 10px; color: var(--dark); font-weight: 600; }
+  .widget-state { display: grid; place-items: center; min-height: 220px; width: 100%; text-align: center; color: var(--muted); font-family: var(--font-caption); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+  .widget-state--small { min-height: 160px; }
+  .widget-state__spinner { width: 28px; height: 28px; margin: 0 auto 12px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--dark); animation: spin .8s linear infinite; }
+  .panel-image { padding: 0; min-height: 440px; background-size: cover; background-position: center; background-color: var(--dark); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); color: #fff; transition: background-image .6s ease; }
+  .panel-image::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.0) 25%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.92) 88%, #000 100%); pointer-events: none; z-index: 1; }
+  .panel-image-content { position: relative; z-index: 2; padding: 26px; color: #fff; display: flex; flex-direction: column; gap: 14px; }
+  .panel-image .card-head { margin-bottom: 0; align-items: center; }
+  .panel-image .card-icon { background: rgba(255,255,255,.15); color: #fff; backdrop-filter: blur(10px); }
+  .panel-image .card-title { color: #fff; }
+  .panel-image .card-subtitle { color: rgba(255,255,255,.7); }
+  .panel-image .chip { background: rgba(255,255,255,.15); color: #fff; backdrop-filter: blur(10px); }
+  .panel-nav { display: flex; gap: 8px; margin-top: 4px; }
+  .panel-nav-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); color: #fff; cursor: pointer; display: grid; place-items: center; transition: all .25s ease; backdrop-filter: blur(10px); }
+  .panel-nav-btn:hover { background: #fff; color: #000; border-color: #fff; }
+  .panel-nav-btn svg { width: 14px; height: 14px; }
+  .panel-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .panel-nav-btn:disabled:hover { background: rgba(255,255,255,.14); color: #fff; border-color: rgba(255,255,255,.25); }
+  .legend-name { font-family: var(--font-caption); font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.15; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+  .legend-years { font-family: var(--font-caption); font-size: 12px; letter-spacing: .1em; color: rgba(255,255,255,.7); margin-bottom: 10px; }
+  .legend-excerpt { font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,.92); margin-bottom: 14px; }
+  .legend-excerpt strong { color: #fff; font-weight: 700; }
+  .history-year-inline { font-family: var(--font-display); font-size: 42px; font-weight: 800; line-height: 1; color: #fff; letter-spacing: -0.02em; margin-bottom: 6px; text-shadow: 0 2px 14px rgba(0,0,0,.6); }
+  .history-title { font-family: var(--font-caption); font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.2; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+  .history-desc { font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,.92); margin-bottom: 14px; }
+  .card-link-white { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-caption); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #fff; text-decoration: none; font-weight: 700; padding: 8px 16px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); border-radius: 20px; backdrop-filter: blur(10px); transition: all .25s ease; align-self: flex-start; }
+  .card-link-white:hover { background: #fff; color: #000; border-color: #fff; }
+  .card-link-white svg { width: 13px; height: 13px; }
+  .play-row { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  .play-row:last-child { border-bottom: none; }
+  .play-rank { width: 30px; height: 30px; border-radius: 9px; background: var(--bg-soft); color: var(--dark); display: grid; place-items: center; font-family: var(--font-caption); font-size: 14px; font-weight: 800; flex-shrink: 0; }
+  .play-row:nth-child(1) .play-rank { background: var(--dark); color: #fff; }
+  .play-row:nth-child(2) .play-rank { background: var(--beige-deep); color: var(--dark); }
+  .play-row:nth-child(3) .play-rank { background: var(--beige); color: var(--dark); }
+  .play-info { flex: 1; min-width: 0; }
+  .play-title { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .play-author { font-family: var(--font-caption); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .play-bar { height: 5px; background: var(--bg-soft); border-radius: 3px; overflow: hidden; }
+  .play-bar-fill { height: 100%; background: linear-gradient(90deg, #b8b0a2 0%, var(--dark) 100%); border-radius: 3px; }
+  .play-count { font-family: var(--font-display); font-size: 19px; font-weight: 800; color: var(--dark); min-width: 34px; text-align: right; flex-shrink: 0; letter-spacing: -0.01em; }
+  .quote-card { background: var(--dark); color: #fff; position: relative; overflow: hidden; }
+  .quote-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.06), transparent 70%); }
+  .quote-inner { position: relative; display: flex; align-items: flex-start; gap: 22px; padding: 4px; }
+  .quote-mark { font-family: var(--font-display); font-size: 72px; line-height: .7; color: rgba(255,255,255,.12); flex-shrink: 0; font-weight: 800; }
+  .quote-body { flex: 1; }
+  .quote-text { font-size: clamp(18px, 2.2vw, 24px); line-height: 1.4; color: #fff; margin-bottom: 14px; font-weight: 500; transition: opacity .4s; }
+  .quote-author { font-family: var(--font-caption); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.6); transition: opacity .4s; }
+  .quote-author::before { content: '— '; }
+  .quote-refresh { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; color: #fff; cursor: pointer; display: grid; place-items: center; transition: all .3s; flex-shrink: 0; }
+  .quote-refresh:hover { background: rgba(255,255,255,.16); transform: rotate(180deg); }
+  .quote-refresh svg { width: 17px; height: 17px; }
+  .skel { background: linear-gradient(90deg, rgba(255,255,255,.1), rgba(255,255,255,.22), rgba(255,255,255,.1)); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .skel-line { height: 12px; margin-bottom: 10px; }
+  .skel-line.short { width: 45%; }
+  .skel-line.tiny { width: 30%; }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 28px; }
+    .card-title { font-size: 22px; }
+  }
+  @media (max-width: 600px) {
+    .app { padding: 16px 14px 40px; gap: 16px; }
+    .card { padding: 20px; }
+    .panel-image-content { padding: 20px; }
+    .hero-content { padding: 20px; min-height: 440px; }
+    .hero { min-height: 440px; }
+    .quote-mark { display: none; }
+    .hero-filters { flex-direction: column; }
+    .filter-select { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <div>
+      <h1>Театр Сегодня</h1>
+      <div class="header-sub"><span class="live-dot"></span> Live · обновлено только что</div>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <section class="card hero full">
+      <div class="hero-image" id="heroImage"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-top">
+          <div class="pill-group">
+            <span class="pill pill-live">Live</span>
+            <span class="pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8l-6-4.4h7.6z"/></svg>
+              Топ спектаклей
+            </span>
+          </div>
+          <div class="pill-group">
+            <span class="pill" id="heroCount">· спектаклей</span>
+          </div>
+        </div>
+
+        <div class="hero-bottom">
+          <div class="hero-title-block">
+            <h2 class="hero-title">Топ спектаклей России</h2>
+            <p class="hero-desc">Самые заметные постановки Москвы и Санкт-Петербурга. Фильтруйте по городу и году премьеры, чтобы найти своё.</p>
+
+            <div class="hero-filters">
+              <select class="filter-select" id="cityFilter">
+                <option value="all">Все города</option>
+                <option value="msk">Москва</option>
+                <option value="spb">Санкт-Петербург</option>
+              </select>
+              <select class="filter-select" id="yearFilter">
+                <option value="all">Все годы</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+              </select>
+            </div>
+          </div>
+          <div class="carousel-strip" id="carousel">
+            <div class="widget-state">
+              <div>
+                <div class="widget-state__spinner"></div>
+                Загрузка…
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <path d="M9 22V12h6v10"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">Репертуар театра</div>
+            <div class="card-subtitle">Актуальные показы · Ticketmaster API</div>
+          </div>
+        </div>
+        <span class="chip">Сейчас идёт</span>
+      </div>
+      <div class="dropdown">
+        <select class="dropdown-select" id="theatreSelect"></select>
+        <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+      <div class="rep-list" id="repList">
+        <div class="widget-state widget-state--small">
+          <div>
+            <div class="widget-state__spinner"></div>
+            Загрузка…
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-image" id="legendCard">
+      <div class="panel-image-content">
+        <div class="card-head">
+          <div class="card-title-wrap">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">Легенда дня</div>
+              <div class="card-subtitle" id="legendDate">сегодня</div>
+            </div>
+          </div>
+          <span class="chip">Персона</span>
+        </div>
+        <div id="legendContent"></div>
+        <div class="panel-nav">
+          <button class="panel-nav-btn" id="legendPrev" title="Назад">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="panel-nav-btn" id="legendNext" title="Вперёд">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-image" id="historyCard">
+      <div class="panel-image-content">
+        <div class="card-head">
+          <div class="card-title-wrap">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 7v5l3 2"/>
+              </svg>
+            </div>
+            <div>
+              <div class="card-title">История театра</div>
+              <div class="card-subtitle" id="historyDate">сегодня</div>
+            </div>
+          </div>
+          <span class="chip">Событие</span>
+        </div>
+        <div id="historyContent"></div>
+        <div class="panel-nav">
+          <button class="panel-nav-btn" id="historyPrev" title="Назад">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="panel-nav-btn" id="historyNext" title="Вперёд">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8l-6-4.4h7.6z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-title">Топ-5 спектаклей</div>
+            <div class="card-subtitle">По количеству постановок</div>
+          </div>
+        </div>
+        <span class="chip">Сезон</span>
+      </div>
+      <div id="playsList"></div>
+    </section>
+
+    <section class="card quote-card full">
+      <div class="quote-inner">
+        <div class="quote-mark">"</div>
+        <div class="quote-body">
+          <div class="quote-text" id="quoteText">Театр — это такая кафедра, с которой можно много сказать миру добра.</div>
+          <div class="quote-author" id="quoteAuthor">Николай Гоголь</div>
+        </div>
+        <button class="quote-refresh" id="quoteBtn" title="Другая цитата">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 4v6h-6"/>
+            <path d="M1 20v-6h6"/>
+            <path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10"/>
+            <path d="M20.5 15a9 9 0 0 1-14.9 3.4L1 14"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   🔑 TICKETMASTER CONSUMER KEY (получен из My Apps)
+   ═══════════════════════════════════════════════════════ */
+const TICKETMASTER_API_KEY = 'Dc3EsQD4XGO6npWMYGyG7KDtS9Amq1qELZ';
+
+/* ═══════════════════════════════════════════════════════
+   УТИЛИТЫ
+   ═══════════════════════════════════════════════════════ */
+const MONTHS_RU = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const CITIES = { msk: 'Москва', spb: 'Санкт-Петербург' };
+
+function getTodayInfo() {
+  const now = new Date();
+  const day = now.getDate();
+  const monthName = MONTHS_RU[now.getMonth()];
+  const pageTitle = `Портал:Театр/День/${day}_${monthName}`;
+  const apiUrl = `https://ru.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&prop=wikitext&format=json&origin=*`;
+  return { day, monthName, pageTitle, apiUrl, dateLabel: `${day} ${monthName}` };
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+function cleanWikiText(str) {
+  return str
+    .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, '$2')
+    .replace(/\[\[([^\]]+)\]\]/g, '$1')
+    .replace(/\[(?:https?:\/\/\S+)\s+([^\]]+)\]/g, '$1')
+    .replace(/\[(?:https?:\/\/\S+)\]/g, '')
+    .replace(/{{[^{}]*}}/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/'''?/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function renderLoading(container, text, small) {
+  container.innerHTML = `
+    <div class="widget-state${small ? ' widget-state--small' : ''}">
+      <div>
+        <div class="widget-state__spinner"></div>
+        ${escapeHtml(text || 'Загрузка…')}
+      </div>
+    </div>`;
+}
+
+function renderEmpty(container, text, small) {
+  container.innerHTML = `
+    <div class="widget-state${small ? ' widget-state--small' : ''}">
+      <div>${escapeHtml(text || 'Ничего не найдено')}</div>
+    </div>`;
+}
+
+function formatPrice(prices) {
+  if (!prices || !prices.length) return 'уточняйте';
+  const nums = prices.map(x => parseFloat(x)).filter(x => !isNaN(x));
+  if (!nums.length) return 'уточняйте';
+  return `от ${Math.min(...nums).toFixed(0)} €`;
+}
+
+function formatDate(d) {
+  if (!d) return 'скоро';
+  const raw = d.localDate || d.dateTime;
+  if (!raw) return 'скоро';
+  const dt = new Date(raw);
+  if (isNaN(dt.getTime())) return 'скоро';
+  const today = new Date();
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  const time = dt.getHours().toString().padStart(2,'0') + ':' + dt.getMinutes().toString().padStart(2,'0');
+  if (dt.toDateString() === today.toDateString()) return 'сегодня, ' + time;
+  if (dt.toDateString() === tomorrow.toDateString()) return 'завтра, ' + time;
+  return `${dt.getDate()} ${MONTHS_RU[dt.getMonth()]}, ${time}`;
+}
+
+/* ═══ ФОТО ПЕРСОНЫ ═══ */
+async function fetchPersonPhoto(wikiTitle, personName) {
+  if (wikiTitle) {
+    try {
+      const url = `https://ru.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikiTitle)}&prop=pageimages&format=json&origin=*&pithumbsize=1000`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const page = Object.values(data.query?.pages || {})[0];
+      if (page?.thumbnail?.source) return page.thumbnail.source;
+    } catch(e) {}
+  }
+  if (personName) {
+    try {
+      const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(personName)}&gsrlimit=1&prop=imageinfo&iiprop=url&iiurlwidth=1000&format=json&origin=*`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const page = Object.values(data.query?.pages || {})[0];
+      if (page?.imageinfo?.[0]?.thumburl) return page.imageinfo[0].thumburl;
+    } catch(e) {}
+  }
+  return null;
+}
+
+/* ═══ ФОТО СОБЫТИЯ ═══ */
+async function fetchEventPhoto(query) {
+  if (!query) return null;
+  try {
+    const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&prop=imageinfo&iiprop=url&iiurlwidth=1000&format=json&origin=*`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const page = Object.values(data.query?.pages || {})[0];
+    if (page?.imageinfo?.[0]?.thumburl) return page.imageinfo[0].thumburl;
+  } catch(e) {}
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ТОП СПЕКТАКЛЕЙ — данные без API
+   ═══════════════════════════════════════════════════════ */
+const TOP_SPECTACLES = [
+  { title: 'Вишнёвый сад', city: 'msk', theatre: 'МХТ им. Чехова', year: 2024, status: 'Идёт', director: 'Денис Азаров', rating: 9.2 },
+  { title: 'Заповедник', city: 'msk', theatre: 'Театр им. Пушкина', year: 2025, status: 'Идёт', director: 'Евгений Писарев', rating: 9.4 },
+  { title: 'Свадьба Кречинского', city: 'msk', theatre: 'Театр сатиры', year: 2025, status: 'Идёт', director: 'Сергей Газаров', rating: 9.1 },
+  { title: 'Сирано де Бержерак', city: 'msk', theatre: 'Театр Вахтангова', year: 2024, status: 'Идёт', director: 'Римас Туминас', rating: 9.5 },
+  { title: 'Идиот', city: 'msk', theatre: 'Театр на Таганке', year: 2025, status: 'Идёт', director: 'Юрий Любимов', rating: 9.0 },
+  { title: 'На дне', city: 'msk', theatre: 'МХТ им. Чехова', year: 2024, status: 'Идёт', director: 'Константин Богомолов', rating: 9.3 },
+  { title: 'Р', city: 'msk', theatre: 'Мастерская Петра Фоменко', year: 2025, status: 'Идёт', director: 'Пётр Фоменко', rating: 9.2 },
+  { title: 'Мастер и Маргарита', city: 'msk', theatre: 'МХТ им. Чехова', year: 2024, status: 'Завершён', director: 'Янош Сас', rating: 9.4 },
+  { title: 'Три сестры', city: 'msk', theatre: 'Современник', year: 2023, status: 'Идёт', director: 'Галина Волчек', rating: 8.9 },
+  { title: 'Кабала святош', city: 'msk', theatre: 'МХТ им. Чехова', year: 2024, status: 'Идёт', director: 'Сергей Женовач', rating: 9.1 },
+  { title: 'Борис Годунов', city: 'msk', theatre: 'Большой театр', year: 2025, status: 'Идёт', director: 'Александр Сокуров', rating: 9.6 },
+  { title: 'Евгений Онегин', city: 'msk', theatre: 'Большой театр', year: 2024, status: 'Идёт', director: 'Дмитрий Черняков', rating: 9.5 },
+  { title: 'Макбет', city: 'spb', theatre: 'Александринский театр', year: 2026, status: 'Идёт', director: 'Николай Рощин', rating: 9.0 },
+  { title: 'Три', city: 'spb', theatre: 'Театр «Мастерская»', year: 2025, status: 'Идёт', director: 'Пётр Шерешевский', rating: 9.3 },
+  { title: 'Пастернак', city: 'spb', theatre: 'Театр «Мастерская»', year: 2025, status: 'Идёт', director: 'Григорий Козлов', rating: 9.2 },
+  { title: 'Чао', city: 'spb', theatre: 'Театр комедии Акимова', year: 2025, status: 'Идёт', director: 'Андрей Прикотенко', rating: 8.8 },
+  { title: 'Гамлет', city: 'spb', theatre: 'Александринский театр', year: 2024, status: 'Идёт', director: 'Валерий Фокин', rating: 9.1 },
+  { title: 'Три товарища', city: 'spb', theatre: 'Балтийский дом', year: 2024, status: 'Идёт', director: 'Владимир Туманов', rating: 8.9 },
+  { title: 'Кто вы, мсье Шмитт?', city: 'spb', theatre: 'Театр «За Чёрной речкой»', year: 2025, status: 'Идёт', director: 'Андрей Сидельников', rating: 8.7 },
+];
+
+const CARD_GRADIENTS = [
+  'linear-gradient(135deg, #4a1d2e, #7d3450)',
+  'linear-gradient(135deg, #2d2a4a, #4a3f7d)',
+  'linear-gradient(135deg, #1d3a4a, #2e647d)',
+  'linear-gradient(135deg, #3f1d1d, #7d3030)',
+  'linear-gradient(135deg, #1d4a3a, #2e7d5c)',
+  'linear-gradient(135deg, #3a2a1d, #7d5c2e)',
+  'linear-gradient(135deg, #2a1d4a, #4a2e7d)',
+];
+
+function renderTopSpectacles() {
+  const carousel = document.getElementById('carousel');
+  const cityFilter = document.getElementById('cityFilter').value;
+  const yearFilter = document.getElementById('yearFilter').value;
+
+  const filtered = TOP_SPECTACLES.filter(s => {
+    const cityOk = cityFilter === 'all' || s.city === cityFilter;
+    const yearOk = yearFilter === 'all' || String(s.year) === yearFilter;
+    return cityOk && yearOk;
+  });
+
+  document.getElementById('heroCount').textContent = `${filtered.length} спектаклей`;
+
+  if (!filtered.length) {
+    renderEmpty(carousel, 'По выбранным фильтрам ничего нет', false);
+    return;
+  }
+
+  carousel.innerHTML = filtered.map((s, i) => `
+    <div class="show-card" style="animation:fadeUp .5s ${i * 0.05}s backwards">
+      <div class="show-poster" style="background:${CARD_GRADIENTS[i % CARD_GRADIENTS.length]}">
+        <span class="show-status show-status--${s.status === 'Идёт' ? 'active' : 'ended'}">${escapeHtml(s.status)}</span>
+        <span class="show-rating">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.8 5.7 21.2 8 13.8l-6-4.4h7.6z"/></svg>
+          ${s.rating.toFixed(1)}
+        </span>
+      </div>
+      <div class="show-body">
+        <div class="show-theatre">${escapeHtml(s.theatre)} · ${CITIES[s.city]}</div>
+        <div class="show-title">${escapeHtml(s.title)}</div>
+        <div class="show-meta-block">
+          <div class="show-meta-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Режиссёр: <strong>${escapeHtml(s.director)}</strong></span>
+          </div>
+          <div class="show-meta-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span>Премьера: <strong>${s.year}</strong></span>
+          </div>
+        </div>
+        <div class="show-bottom">
+          <span>${s.status === 'Идёт' ? 'Сейчас на сцене' : 'Архив'}</span>
+          <span class="show-year">${s.year}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setHeroBackground() {
+  document.getElementById('heroImage').style.background =
+    'linear-gradient(135deg, #1c1b1a 0%, #3a2530 50%, #1c1b1a 100%)';
+}
+
+/* ═══════════════════════════════════════════════════════
+   РЕПЕРТУАР — Ticketmaster Discovery API через прокси
+   ═══════════════════════════════════════════════════════ */
+let repAbortController = null;
+
+async function initRepertoire() {
+  const sel = document.getElementById('theatreSelect');
+  const list = document.getElementById('repList');
+
+  const cities = [
+    { id: 'london', name: 'Лондон', city: 'London', country: 'GB' },
+    { id: 'newyork', name: 'Нью-Йорк', city: 'New York', country: 'US' },
+    { id: 'paris', name: 'Париж', city: 'Paris', country: 'FR' },
+    { id: 'berlin', name: 'Берлин', city: 'Berlin', country: 'DE' },
+    { id: 'moscow', name: 'Москва', city: 'Moscow', country: 'RU' },
+    { id: 'spb', name: 'Санкт-Петербург', city: 'Saint Petersburg', country: 'RU' },
+  ];
+
+  sel.innerHTML = cities.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+
+  async function loadRepertoire(cityId) {
+    const cityInfo = cities.find(c => c.id === cityId);
+
+    if (repAbortController) repAbortController.abort();
+    repAbortController = new AbortController();
+    const signal = repAbortController.signal;
+
+    renderLoading(list, 'Загрузка репертуара…', true);
+
+    try {
+      // ⚠️ Запрос идёт к локальному прокси: /ticketmaster/events.json?...
+      const url = `/ticketmaster/events.json` +
+        `?apikey=${encodeURIComponent(TICKETMASTER_API_KEY)}` +
+        `&classificationName=${encodeURIComponent('Arts & Theatre')}` +
+        `&city=${encodeURIComponent(cityInfo.city)}` +
+        `&countryCode=${cityInfo.country}` +
+        `&size=20` +
+        `&sort=date,asc`;
+
+      const res = await fetch(url, { signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (signal.aborted) return;
+
+      const events = data._embedded?.events || [];
+
+      if (!events.length) {
+        renderEmpty(list, 'Ближайших показов не найдено', true);
+        return;
+      }
+
+      list.innerHTML = events.slice(0, 10).map(ev => {
+        const eventUrl = ev.url || 'https://www.ticketmaster.com';
+
+        let img = '';
+        const imgObj = (ev.images || []).find(i => i.ratio === '16_9' && i.width >= 300)
+                    || (ev.images || []).find(i => i.ratio === '16_9')
+                    || (ev.images || [])[0];
+        if (imgObj) img = imgObj.url;
+
+        let description = String(ev.info || ev.pleaseNote || '').replace(/\s+/g, ' ').trim();
+        if (description.length > 110) description = description.slice(0, 107) + '…';
+        if (!description) description = ev._embedded?.venues?.[0]?.name || '';
+
+        const priceRanges = ev.priceRanges || [];
+
+        return `
+          <a class="rep-item" href="${eventUrl}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(ev.name)} — открыть на Ticketmaster">
+            <div class="rep-thumb" style="${img ? `background-image:url('${img}')` : ''}"></div>
+            <div class="rep-info">
+              <div class="rep-name">${escapeHtml(ev.name)}</div>
+              ${description ? `<div class="rep-desc">${escapeHtml(description)}</div>` : ''}
+              <div class="rep-meta">
+                <span class="rep-date-badge">${formatDate(ev.dates?.start)}</span>
+                <span>${priceRanges.length ? formatPrice(priceRanges.map(p => p.min)) : 'уточняйте'}</span>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      console.warn('Ticketmaster error:', err);
+      renderEmpty(list, 'Сервис временно недоступен', true);
+    }
+  }
+
+  sel.onchange = () => loadRepertoire(sel.value);
+  loadRepertoire(cities[0].id);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ЛЕГЕНДА ДНЯ
+   ═══════════════════════════════════════════════════════ */
+let legends = [];
+let legendIndex = 0;
+
+function renderLegend(person) {
+  document.getElementById('legendDate').textContent = getTodayInfo().dateLabel;
+  const legendCard = document.getElementById('legendCard');
+
+  fetchPersonPhoto(person.wikiTitle, person.name).then(photo => {
+    legendCard.style.backgroundImage = photo
+      ? `url('${photo}')`
+      : 'linear-gradient(135deg, #1c1b1a, #3a2530)';
+  });
+
+  document.getElementById('legendContent').innerHTML = `
+    <div class="legend-name">${escapeHtml(person.name)}</div>
+    <div class="legend-years">${escapeHtml(person.years || '')}</div>
+    <div class="legend-excerpt"><strong>${person.years ? 'Родился в этот день.' : 'Вспомним сегодня.'}</strong> ${escapeHtml(person.role)}</div>
+    ${person.wikiUrl ? `<a class="card-link-white" href="${person.wikiUrl}" target="_blank" rel="noopener">Источник <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></a>` : ''}
+  `;
+  updateLegendNav();
+}
+
+function updateLegendNav() {
+  document.getElementById('legendPrev').disabled = legendIndex <= 0;
+  document.getElementById('legendNext').disabled = legendIndex >= legends.length - 1;
+}
+
+function showLegendByIndex(i) {
+  if (i < 0 || i >= legends.length) return;
+  legendIndex = i;
+  renderLegend(legends[i]);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ИСТОРИЯ
+   ═══════════════════════════════════════════════════════ */
+let events = [];
+let historyIndex = 0;
+
+function renderHistory(event) {
+  document.getElementById('historyDate').textContent = getTodayInfo().dateLabel;
+  const historyCard = document.getElementById('historyCard');
+
+  fetchEventPhoto(event.searchQuery || event.title).then(photo => {
+    historyCard.style.backgroundImage = photo
+      ? `url('${photo}')`
+      : 'linear-gradient(135deg, #1c1b1a, #3a2530)';
+  });
+
+  document.getElementById('historyContent').innerHTML = `
+    <div class="history-year-inline">${escapeHtml(event.year || '·')}</div>
+    <div class="history-title">${escapeHtml(event.title)}</div>
+    <div class="history-desc">${escapeHtml(event.description)}</div>
+    ${event.wikiUrl ? `<a class="card-link-white" href="${event.wikiUrl}" target="_blank" rel="noopener">Источник <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></a>` : ''}
+  `;
+  updateHistoryNav();
+}
+
+function updateHistoryNav() {
+  document.getElementById('historyPrev').disabled = historyIndex <= 0;
+  document.getElementById('historyNext').disabled = historyIndex >= events.length - 1;
+}
+
+function showHistoryByIndex(i) {
+  if (i < 0 || i >= events.length) return;
+  historyIndex = i;
+  renderHistory(events[i]);
+}
+
+/* ═══════════════════════════════════════════════════════
+   WIKIPEDIA ПАРСЕРЫ
+   ═══════════════════════════════════════════════════════ */
+function extractPersonLink(line) {
+  const allLinks = [...line.matchAll(/\[\[([^|\]]+)(?:\|([^\]]+))?\]\]/g)];
+  const personLink = allLinks.find(m => !/^\d{1,4}$/.test(m[1].trim()));
+  return personLink || null;
+}
+
+function parsePersonFromWikitext(wikitext) {
+  if (!wikitext) return null;
+  const sectionMatch = wikitext.match(/={2,4}\s*Родились\s*={2,4}([\s\S]*?)(?=={2,4}\s*[А-ЯЁ]|$)/);
+  if (!sectionMatch) return null;
+  const lines = sectionMatch[1].split('\n').filter(l => /^[*\-]/.test(l.trim()));
+  if (!lines.length) return null;
+  const line = lines[Math.floor(Math.random() * lines.length)];
+  const yearMatch = line.match(/\[?\[?(\d{4})\]?\]?/);
+  const birthYear = yearMatch ? yearMatch[1] : '';
+  const personLink = extractPersonLink(line);
+  if (!personLink) return null;
+  const wikiTitle = personLink[1];
+  const displayName = personLink[2] || personLink[1];
+  let rest = line.replace(personLink[0], '');
+  let description = cleanWikiText(rest).replace(/^[\*\-]\s*/, '').replace(/\[?\d{4}\]?/g, '').replace(/^[—–,:;\s]+/, '').replace(/\s+/g, ' ').trim();
+  if (!description || description.length < 5) description = 'театральный деятель';
+  const firstSentence = description.split(/\.\s/)[0];
+  if (firstSentence.length > 10) description = firstSentence;
+  return { name: displayName, years: birthYear ? `${birthYear}–` : '', role: description, wikiTitle, wikiUrl: `https://ru.wikipedia.org/wiki/${encodeURIComponent(wikiTitle)}` };
+}
+
+function parseEventFromWikitext(wikitext) {
+  if (!wikitext) return null;
+  const sectionMatch = wikitext.match(/={2,4}\s*События\s*={2,4}([\s\S]*?)(?=={2,4}\s*[А-ЯЁ]|$)/);
+  if (!sectionMatch) return null;
+  const lines = sectionMatch[1].split('\n').filter(l => /^[*\-]/.test(l.trim()));
+  if (!lines.length) return null;
+  const line = lines[Math.floor(Math.random() * lines.length)];
+  const yearMatch = line.match(/\[?\[?(\d{4})\]?\]?/);
+  const year = yearMatch ? yearMatch[1] : '';
+  let description = cleanWikiText(line).replace(/^[\*\-]\s*/, '').replace(/^\d{4}\s*[—–-]?\s*/, '');
+  if (!description || description.length < 15) return null;
+  let title = description;
+  const breakMatch = description.match(/^(.{15,80}?)(?:\s*[—–:]\s+|\.\s+)/);
+  if (breakMatch) title = breakMatch[1].trim();
+  else if (title.length > 75) title = title.slice(0, 72) + '…';
+  const linkMatch = line.match(/\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/);
+  const searchQuery = linkMatch ? linkMatch[1] : title;
+  return { year, title, description, wikiUrl: '', searchQuery };
+}
+
+function showLegendSkeleton() {
+  document.getElementById('legendContent').innerHTML = `<div class="skel skel-line short" style="height:22px;width:60%"></div><div class="skel skel-line tiny"></div><div class="skel skel-line"></div><div class="skel skel-line"></div>`;
+}
+function showHistorySkeleton() {
+  document.getElementById('historyContent').innerHTML = `<div class="skel skel-line short" style="height:34px;width:30%"></div><div class="skel skel-line short"></div><div class="skel skel-line"></div>`;
+}
+
+function getCacheKey() { const d = new Date(); return `teatr_v18_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+
+async function fetchDailyData() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(getCacheKey()) || 'null');
+    if (cached && cached.legends && cached.events) {
+      legends = cached.legends;
+      events = cached.events;
+      legendIndex = 0;
+      historyIndex = 0;
+      renderLegend(legends[0]);
+      renderHistory(events[0]);
+      return;
+    }
+  } catch(e) {}
+
+  showLegendSkeleton();
+  showHistorySkeleton();
+
+  const { apiUrl } = getTodayInfo();
+  try {
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    const wikitext = data.parse?.wikitext?.['*'] || '';
+    if (!wikitext) throw new Error('empty');
+
+    legends = [];
+    events = [];
+
+    const personsSection = wikitext.match(/={2,4}\s*Родились\s*={2,4}([\s\S]*?)(?=={2,4}\s*[А-ЯЁ]|$)/);
+    if (personsSection) {
+      const lines = personsSection[1].split('\n').filter(l => /^[*\-]/.test(l.trim()));
+      for (const line of lines) {
+        const person = parsePersonFromWikitext(line);
+        if (person) legends.push(person);
+      }
+    }
+    if (!legends.length) legends = FALLBACK_LEGENDS;
+
+    const eventsSection = wikitext.match(/={2,4}\s*События\s*={2,4}([\s\S]*?)(?=={2,4}\s*[А-ЯЁ]|$)/);
+    if (eventsSection) {
+      const lines = eventsSection[1].split('\n').filter(l => /^[*\-]/.test(l.trim()));
+      for (const line of lines) {
+        const event = parseEventFromWikitext(line);
+        if (event) events.push(event);
+      }
+    }
+    if (!events.length) events = FALLBACK_EVENTS;
+
+    legendIndex = 0;
+    historyIndex = 0;
+    renderLegend(legends[0]);
+    renderHistory(events[0]);
+
+    localStorage.setItem(getCacheKey(), JSON.stringify({ legends, events }));
+  } catch (err) {
+    console.warn('Wikipedia error:', err);
+    legends = FALLBACK_LEGENDS;
+    events = FALLBACK_EVENTS;
+    renderLegend(legends[0]);
+    renderHistory(events[0]);
+  }
+}
+
+const FALLBACK_LEGENDS = [
+  { name: 'Константин Станиславский', years: '1863–1938', role: 'Реформатор сцены, создатель знаменитой системы актёрской техники, соучредитель МХТ.', wikiUrl: 'https://ru.wikipedia.org/wiki/Станиславский,_Константин_Сергеевич', wikiTitle: 'Станиславский,_Константин_Сергеевич' },
+  { name: 'Всеволод Мейерхольд', years: '1874–1940', role: 'Режиссёр-новатор, создатель биомеханики, реформатор условного театра.', wikiUrl: 'https://ru.wikipedia.org/wiki/Мейерхольд,_Всеволод_Эмильевич', wikiTitle: 'Мейерхольд,_Всеволод_Эмильевич' }
+];
+
+const FALLBACK_EVENTS = [
+  { year: '1898', title: 'Открытие МХТ', description: 'Станиславский и Немирович-Данченко основали Московский Художественный театр.', wikiUrl: 'https://ru.wikipedia.org/wiki/Московский_Художественный_театр', searchQuery: 'Московский Художественный театр' },
+  { year: '1956', title: 'Рождение «Современника»', description: 'Премьера спектакля «Вечно живые» по пьесе Виктора Розова.', wikiUrl: 'https://ru.wikipedia.org/wiki/Современник_(театр)', searchQuery: 'Современник театр' }
+];
+
+/* ═══════════════════════════════════════════════════════
+   ТОП-5
+   ═══════════════════════════════════════════════════════ */
+const PLAYS_TOP5 = [
+  { title: 'Женитьба', author: 'Н. Гоголь', count: 59 },
+  { title: 'Ревизор', author: 'Н. Гоголь', count: 54 },
+  { title: 'Вишнёвый сад', author: 'А. Чехов', count: 45 },
+  { title: 'Чайка', author: 'А. Чехов', count: 32 },
+  { title: 'Ромео и Джульетта', author: 'У. Шекспир', count: 31 }
+];
+
+function renderPlays() {
+  const max = PLAYS_TOP5[0].count;
+  document.getElementById('playsList').innerHTML = PLAYS_TOP5.map((p, i) => `
+    <div class="play-row">
+      <div class="play-rank">${i + 1}</div>
+      <div class="play-info">
+        <div class="play-title">${escapeHtml(p.title)}</div>
+        <div class="play-author">${escapeHtml(p.author)}</div>
+        <div class="play-bar"><div class="play-bar-fill" style="width:${(p.count / max * 100).toFixed(1)}%"></div></div>
+      </div>
+      <div class="play-count">${p.count}</div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ЦИТАТА
+   ═══════════════════════════════════════════════════════ */
+const QUOTES = [
+  { text: 'Театр — это такая кафедра, с которой можно много сказать миру добра.', author: 'Николай Гоголь' },
+  { text: 'Театр начинается с вешалки.', author: 'Константин Станиславский' },
+  { text: 'Весь мир — театр, а люди в нём — актёры.', author: 'Уильям Шекспир' },
+  { text: 'Не верю!', author: 'Константин Станиславский' },
+  { text: 'Театр — это искусство отражать.', author: 'Владимир Немирович-Данченко' },
+  { text: 'Сцена — это единственное место, где можно быть кем угодно.', author: 'Михаил Чехов' }
+];
+
+let quoteIndex = 0;
+function renderQuote() {
+  const q = QUOTES[quoteIndex];
+  const t = document.getElementById('quoteText');
+  const a = document.getElementById('quoteAuthor');
+  t.style.opacity = 0; a.style.opacity = 0;
+  setTimeout(() => { t.textContent = q.text; a.textContent = q.author; t.style.opacity = 1; a.style.opacity = 1; }, 200);
+}
+document.getElementById('quoteBtn').onclick = () => { quoteIndex = (quoteIndex + 1) % QUOTES.length; renderQuote(); };
+
+/* ═══════════════════════════════════════════════════════
+   ФИЛЬТРЫ
+   ═══════════════════════════════════════════════════════ */
+document.getElementById('cityFilter').addEventListener('change', renderTopSpectacles);
+document.getElementById('yearFilter').addEventListener('change', renderTopSpectacles);
+
+document.getElementById('legendPrev').onclick = () => showLegendByIndex(legendIndex - 1);
+document.getElementById('legendNext').onclick = () => showLegendByIndex(legendIndex + 1);
+document.getElementById('historyPrev').onclick = () => showHistoryByIndex(historyIndex - 1);
+document.getElementById('historyNext').onclick = () => showHistoryByIndex(historyIndex + 1);
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════ */
+function init() {
+  setHeroBackground();
+  renderTopSpectacles();
+  initRepertoire();
+  renderPlays();
+  fetchDailyData();
+  renderQuote();
+
+  document.querySelectorAll('.card, .panel-image').forEach((c, i) => c.style.animationDelay = (i * 0.07) + 's');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
